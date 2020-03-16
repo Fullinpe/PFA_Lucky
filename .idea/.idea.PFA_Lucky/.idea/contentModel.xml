@@ -23,6 +23,7 @@
           <e p="Settings.Designer.cs" t="Include" />
           <e p="Settings.settings" t="Include" />
         </e>
+        <e p="screenDB.cs" t="Include" />
         <e p="UtilsDB.cs" t="Include" />
       </e>
       <e p="PFA_Lucky.sln" t="IncludeFlat" />

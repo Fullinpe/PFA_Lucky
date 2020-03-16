@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net.NetworkInformation;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 
@@ -7,11 +9,11 @@ namespace PFA_Lucky
 {
     public static class UtilsDB
     {
-        public static string[][] selectDB(string sql, params string[] selects)
+        public static List<string[]> selectDB(string sql)
         {
             if(sql=="")
                 sql = "server=119.27.176.211;port=10005;user=customer;password=1234569877;database=lucky;";
-            
+            List<string[]> list=new List<string[]>();
             MySqlConnection conn = new MySqlConnection(sql);
             try
             {
@@ -22,21 +24,20 @@ namespace PFA_Lucky
                 MySqlCommand cmd = new MySqlCommand(sqlStr, conn); //生成命令构造器对象。
                 // cmd.Parameters.AddWithValue("答案", "ii");
                 MySqlDataReader rdr = cmd.ExecuteReader();
-                string[][] strings=new string[2][];
                 try
                 {
                     int temp=0;
                     while (rdr.Read()) //Read()函数设计的时候是按行查询，查完一行换下一行。
                     {
-                        strings[temp]=new string[rdr.FieldCount];
+                        string[] strings=new string[rdr.FieldCount];
                         for (int i = 0; i < rdr.FieldCount; i++)
                         {
-                            strings[temp][i] = rdr[i].ToString();
+                            strings[i] = rdr[i].ToString();
                         }
-
+                        list.Add(strings);
                         temp++;
                     }
-                    return strings;
+                    return list;
                 }
                 catch (Exception ex)
                 {
@@ -52,8 +53,28 @@ namespace PFA_Lucky
             {
                 conn.Close();
             }
-            return new string[1][];
             
+            
+            
+            return list;
+            
+        }
+        public static string GetMacByNetworkInterface()
+        {
+            try
+            {
+                NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
+                foreach (NetworkInterface ni in interfaces)
+                {
+                    return BitConverter.ToString(ni.GetPhysicalAddress().GetAddressBytes());
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+
+            return "00-00-00-00-00-00";
         }
     }
 }

@@ -1,10 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Management;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,67 +21,30 @@ namespace PFA_Lucky
         {
             InitializeComponent();
         }
-
+        
         private void button1_Click(object sender, EventArgs e)
         {
-            // button1.Text = GetMacByNetworkInterface();
-            string[][] strs = UtilsDB.selectDB("", "");
-            button1.Text = strs[1][4];
-            // String connetStr = "server=119.27.176.211;port=10005;user=customer;password=1234569877;database=lucky;";
-            // MySqlConnection conn = new MySqlConnection(connetStr);
-            // try
-            // {
-            //     conn.Open();
-            //     Debug.WriteLine("已经建立连接");
-            //     //TODO：在这里使用代码对数据库进行增删查改
-            //     string sqlStr = "SELECT * FROM lucky.`题库`;";
-            //     MySqlCommand cmd = new MySqlCommand(sqlStr, conn); //生成命令构造器对象。
-            //     // cmd.Parameters.AddWithValue("答案", "ii");
-            //     MySqlDataReader rdr = cmd.ExecuteReader();
-            //     try
-            //     {
-            //         while (rdr.Read()) //Read()函数设计的时候是按行查询，查完一行换下一行。
-            //         {
-            //             string[] strings = new string[5];
-            //             for (int i = 0; i < strings.Length; i++)
-            //             {
-            //                 strings[i] = rdr[i].ToString();
-            //             }
-            //
-            //         }
-            //     }
-            //     catch (Exception ex)
-            //     {
-            //         MessageBox.Show(ex.ToString(), @"错误信息");
-            //     }
-            // }
-            // catch (Exception)
-            // {
-            //     Debug.WriteLine("连接失败");
-            //     MessageBox.Show(@"连接失败", @"错误信息");
-            // }
-            // finally
-            // {
-            //     conn.Close();
-            // }
+            
         }
 
-        public static string GetMacByNetworkInterface()
+        private void openFileDialog1_FileOk(object sender, CancelEventArgs e)
         {
-            try
-            {
-                NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
-                foreach (NetworkInterface ni in interfaces)
-                {
-                    return BitConverter.ToString(ni.GetPhysicalAddress().GetAddressBytes());
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
-
-            return "00-00-00-00-00-00";
+            
         }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            Bitmap bitmap = screenDB.GetScreenCapture();
+
+            
+            saveFileDialog1.ShowDialog(this);
+            bitmap.Save(saveFileDialog1.FileName,System.Drawing.Imaging.ImageFormat.Jpeg);
+            // button1.Text = "" + screenDB.ppxI;
+            // Image img= Image.FromHbitmap(bitmap.GetHbitmap());
+            // pictureBox1.Image = img;
+            // pictureBox1.Show();
+            // pictureBox1.Refresh();
+        }
+        
     }
 }
