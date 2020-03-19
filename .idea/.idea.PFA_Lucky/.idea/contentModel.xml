@@ -1,19 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ContentModelStore">
+    <e p="C:\Users\Fullinpe\.Rider2019.3\config\consoles\db" t="IncludeRecursive" />
     <e p="C:\Users\Fullinpe\.Rider2019.3\config\extensions" t="IncludeRecursive" />
     <e p="C:\Users\Fullinpe\.Rider2019.3\system\extResources" t="IncludeRecursive" />
     <e p="C:\Users\Fullinpe\.Rider2019.3\system\resharper-host\local\Transient\ReSharperHost\v193\SolutionCaches\_PFA_Lucky.-1705689574.00" t="ExcludeRecursive" />
     <e p="G:\C#_Projects\PFA_Lucky" t="IncludeFlat">
-      <e p="packages" t="ExcludeRecursive" />
+      <e p="packages" t="ExcludeRecursive">
+        <e p="OpenCvSharp4.runtime.win.4.2.0.20200208\runtimes\win-x64\native\opencv_videoio_ffmpeg420_64.dll" t="Include" />
+        <e p="OpenCvSharp4.runtime.win.4.2.0.20200208\runtimes\win-x64\native\OpenCvSharpExtern.dll" t="Include" />
+        <e p="OpenCvSharp4.runtime.win.4.2.0.20200208\runtimes\win-x86\native\opencv_videoio_ffmpeg420.dll" t="Include" />
+        <e p="OpenCvSharp4.runtime.win.4.2.0.20200208\runtimes\win-x86\native\OpenCvSharpExtern.dll" t="Include" />
+      </e>
       <e p="PFA_Lucky" t="IncludeRecursive">
         <e p="App.config" t="Include" />
         <e p="bin" t="ExcludeRecursive" />
+        <e p="dll" t="Include">
+          <e p="x64" t="Include" />
+          <e p="x86" t="Include" />
+        </e>
         <e p="Form1.cs" t="Include" />
         <e p="Form1.Designer.cs" t="Include" />
         <e p="Form1.resx" t="Include" />
+        <e p="login.cs" t="Include" />
+        <e p="login.Designer.cs" t="Include" />
+        <e p="login.resx" t="Include" />
         <e p="obj" t="ExcludeRecursive" />
         <e p="packages.config" t="Include" />
+        <e p="pfa.ico" t="Include" />
         <e p="PFA_Lucky.csproj" t="IncludeRecursive" />
         <e p="Program.cs" t="Include" />
         <e p="Properties" t="Include">
@@ -23,8 +37,10 @@
           <e p="Settings.Designer.cs" t="Include" />
           <e p="Settings.settings" t="Include" />
         </e>
-        <e p="screenDB.cs" t="Include" />
+        <e p="UsrListBox.cs" t="Include" />
         <e p="UtilsDB.cs" t="Include" />
+        <e p="UtilsPic.cs" t="Include" />
+        <e p="Work_user.ico" t="Include" />
       </e>
       <e p="PFA_Lucky.sln" t="IncludeFlat" />
     </e>
