@@ -33,3 +33,7 @@ G:\C#_Projects\PFA_Lucky\PFA_Lucky\bin\Release\System.Numerics.Vectors.xml
 G:\C#_Projects\PFA_Lucky\PFA_Lucky\bin\Release\System.Runtime.CompilerServices.Unsafe.xml
 G:\C#_Projects\PFA_Lucky\PFA_Lucky\bin\Release\System.Threading.Tasks.Extensions.xml
 G:\C#_Projects\PFA_Lucky\PFA_Lucky\obj\Release\PFA_Lucky.login.resources
+G:\C#_Projects\PFA_Lucky\PFA_Lucky\bin\Release\dll\x86\OpenCvSharpExtern.dll
+G:\C#_Projects\PFA_Lucky\PFA_Lucky\bin\Release\dll\x86\opencv_videoio_ffmpeg420.dll
+G:\C#_Projects\PFA_Lucky\PFA_Lucky\bin\Release\dll\x64\OpenCvSharpExtern.dll
+G:\C#_Projects\PFA_Lucky\PFA_Lucky\bin\Release\dll\x64\opencv_videoio_ffmpeg420_64.dll
