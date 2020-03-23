@@ -22,6 +22,9 @@
         <e p="Form1.cs" t="Include" />
         <e p="Form1.Designer.cs" t="Include" />
         <e p="Form1.resx" t="Include" />
+        <e p="Form2.cs" t="Include" />
+        <e p="Form2.Designer.cs" t="Include" />
+        <e p="Form2.resx" t="Include" />
         <e p="login.cs" t="Include" />
         <e p="login.Designer.cs" t="Include" />
         <e p="login.resx" t="Include" />

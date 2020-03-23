@@ -66,6 +66,20 @@ namespace PFA_Lucky
                     //todo:查询需求、查询在线状况（自己和成员）、上传截图、
                     if (isworking && !ispause)
                     {
+                        var strs = UtilsDB.selectDB(
+                            "SELECT NUM_PIC,`NAME`,MSG FROM members JOIN (SELECT NUM_PIC,LOOKER,MSG FROM pictures WHERE MSG<>'' AND S_ID='" +
+                            login.s_id + "') AS x ON x.LOOKER=members.S_ID");
+                        if (strs.Count >= 1)
+                        {
+                            UtilsDB.changeDB("UPDATE pictures SET MSG='' WHERE NUM_PIC=" + strs[0][0]);
+                            synchronizationContext.Post((obj) =>
+                            {
+                                notifyIcon1.BalloonTipTitle = strs[0][1];
+                                notifyIcon1.BalloonTipText = strs[0][2];
+                                notifyIcon1.ShowBalloonTip(5000);
+                            }, null);
+                        }
+
                         var temp = UtilsDB.selectDB(
                             "SELECT MAX(NUM_PIC) FROM pictures WHERE S_ID='" + login.s_id + "' AND SERIER_PIC=0");
                         if (temp.Count == 1 && temp[0][0] != "")
@@ -74,6 +88,16 @@ namespace PFA_Lucky
                                 "UPDATE pictures SET SERIER_PIC=" + serier + " , BLOB_PIC=@blobData WHERE NUM_PIC=" +
                                 temp[0][0],
                                 new MySqlParameter("@blobData", UtilsPic.Bitmap2Byte(UtilsPic.GetScreenCapture())));
+                        }
+
+                        //TODO:修改时间间隔
+                        if (worktime % 50 == 0)
+                        {
+                            UtilsDB.changeDB(
+                                "INSERT INTO together.pictures(pictures.SERIER_PIC,pictures.S_ID,pictures.OPER_device,pictures.BLOB_PIC) VALUES('" +
+                                serier + "','" + login.s_id + "',@macData,@blobData);",
+                                new MySqlParameter("@blobData", UtilsPic.Bitmap2Byte(UtilsPic.GetScreenCapture())),
+                                new MySqlParameter("@macData", UtilsDB.addr_Mac));
                         }
                     }
 
@@ -107,6 +131,7 @@ namespace PFA_Lucky
                             listBox1.EndUpdate();
                         }, null);
                     }
+
 
                     worktime++;
                     synchronizationContext.Post((state) => { label2.Text = "当前时长：" + state; },
@@ -163,6 +188,28 @@ namespace PFA_Lucky
 
         private void 退出ToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (isworking)
+            {
+                bool temp = isworking && stopwatch.Elapsed.TotalSeconds >= 30.0;
+                if (MessageBox.Show(
+                    "确定要结束本次打卡计时？\n" +
+                    (temp
+                        ? "本次将获得时长: " + (int) stopwatch.Elapsed.TotalSeconds + " 分钟"
+                        : "\n无法获得时长  原因：\n计时未达到30分钟最低时间\n"), "提示", MessageBoxButtons.OKCancel) == DialogResult.OK)
+                {
+                    if (temp)
+                        UtilsDB.changeDB("UPDATE members SET OL_TOTAL=OL_TOTAL+IF(OL>0," +
+                                         (int) stopwatch.Elapsed.TotalSeconds +
+                                         ",0) WHERE S_ID='" + login.s_id + "';");
+                    stopwatch.Reset();
+                    if (ispause)
+                        button2.Text = "休息一下";
+                    isworking = false;
+                    ispause = false;
+                    Text = title;
+                }else
+                    return;
+            }
             if (MessageBox.Show("退出？", "", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 notifyIcon1.Visible = false;
@@ -250,11 +297,14 @@ namespace PFA_Lucky
                     TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
             }
 
-            Rectangle button = new Rectangle(listBox1.GetItemRectangle(index).X + 200,
-                listBox1.GetItemRectangle(index).Y + 15, 30, 20);
-            g.FillRectangle(Brushes.Gray, button);
-            TextRenderer.DrawText(g, "查看", this.Font, button, Color.White,
-                TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+            if (int.Parse(maps[index]["online"]) > 0)
+            {
+                Rectangle button = new Rectangle(listBox1.GetItemRectangle(index).X + 200,
+                    listBox1.GetItemRectangle(index).Y + 15, 30, 20);
+                g.FillRectangle(Brushes.Gray, button);
+                TextRenderer.DrawText(g, "查看", this.Font, button, Color.White,
+                    TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+            }
         }
 
         private void listBox1_MeasureItem(object sender, MeasureItemEventArgs e)
@@ -272,20 +322,33 @@ namespace PFA_Lucky
             int index = listBox1.IndexFromPoint(e.X, e.Y);
             Rectangle rect = new Rectangle(listBox1.GetItemRectangle(index).X + 200,
                 listBox1.GetItemRectangle(index).Y + 15, 30, 20);
-            if (index != -1 && e.X <= e.X && e.X < rect.X + rect.Width && (rect.Y <= e.Y && e.Y < rect.Y + rect.Height))
+            if (int.Parse(maps[index]["online"]) > 0 && index != -1 && rect.X <= e.X && e.X < rect.X + rect.Width &&
+                (rect.Y <= e.Y && e.Y < rect.Y + rect.Height))
             {
                 listBox1.SelectedIndex = index;
                 if (listBox1.SelectedIndex != -1)
                 {
-                    var bytes = UtilsDB.getbolbDB("SELECT BLOB_PIC FROM pictures");
-                    // byte[] bytes = new byte[stream.Length]; 
-                    // stream.Read(bytes, 0, bytes.Length); 
-                    Mat mat = OpenCvSharp.Extensions.BitmapConverter.ToMat(
-                        (Bitmap) Image.FromStream(new MemoryStream(bytes)));
-                    Cv2.NamedWindow("mat", 0);
-                    Cv2.ImShow("mat", mat);
-                    // Cv2.WaitKey(0);
+                    var form2 = new Form2(maps[index]["id"], true);
+                    form2.Activate();
+                    form2.Focus();
+                    form2.ShowDialog();
+
+                    // var bytes = UtilsDB.getbolbDB("SELECT BLOB_PIC FROM pictures");
+                    // Mat mat = OpenCvSharp.Extensions.BitmapConverter.ToMat(
+                    //     (Bitmap) Image.FromStream(new MemoryStream(bytes)));
+                    // Cv2.NamedWindow("mat", 0);
+                    // Cv2.ImShow("mat", mat);
+                    // // Cv2.WaitKey(0);
                 }
+            }
+            else if (index != -1)
+            {
+                //TODO:ceshi
+                 var form2 = new Form2(maps[index]["id"], false);
+                // var form2 = new Form2(login.s_id, true);
+                form2.Activate();
+                form2.Focus();
+                form2.ShowDialog();
             }
         }
 
@@ -314,32 +377,37 @@ namespace PFA_Lucky
             }
         }
 
+        //TODO:秒改分
         private void button3_Click(object sender, EventArgs e)
         {
-            if (isworking && stopwatch.Elapsed.TotalSeconds >= 30.0)
+            if (isworking)
             {
-                if (MessageBox.Show("确定要结束本次打卡计时？", "提示", MessageBoxButtons.OKCancel) == DialogResult.OK)
+                bool temp = isworking && stopwatch.Elapsed.TotalSeconds >= 30.0;
+                if (MessageBox.Show(
+                    "确定要结束本次打卡计时？\n" +
+                    (temp
+                        ? "本次将获得时长: " + (int) stopwatch.Elapsed.TotalSeconds + " 分钟"
+                        : "\n无法获得时长  原因：\n计时未达到30分钟最低时间\n"), "提示", MessageBoxButtons.OKCancel) == DialogResult.OK)
                 {
-                    UtilsDB.changeDB("UPDATE members SET OL_TOTAL=OL_TOTAL+IF(OL>0," +
-                                     (int) stopwatch.Elapsed.TotalSeconds +
-                                     ",0) WHERE S_ID='" + login.s_id + "';");
+                    if (temp)
+                        UtilsDB.changeDB("UPDATE members SET OL_TOTAL=OL_TOTAL+IF(OL>0," +
+                                         (int) stopwatch.Elapsed.TotalSeconds +
+                                         ",0) WHERE S_ID='" + login.s_id + "';");
                     stopwatch.Reset();
-                if (ispause)
-                    button2.Text = "休息一下";
-                isworking = false;
-                ispause = false;
-                Text = title;
+                    if (ispause)
+                        button2.Text = "休息一下";
+                    isworking = false;
+                    ispause = false;
+                    Text = title;
                 }
-
             }
-            else
-                MessageBox.Show("无法结束  原因：\n1、没有开始\n2、计时未达到30分钟最低时间", "提示");
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            // MessageBox.Show(UtilsDB
-            //     .changeDB("UPDATE members SET OL_TOTAL=OL_TOTAL+IF(OL>0,6,0) WHERE S_ID='1713206317';").ToString());
+            // notifyIcon1.BalloonTipTitle = "94830";
+            // notifyIcon1.BalloonTipText = "03uw09pa";
+            // notifyIcon1.ShowBalloonTip(5000);
         }
     }
 }

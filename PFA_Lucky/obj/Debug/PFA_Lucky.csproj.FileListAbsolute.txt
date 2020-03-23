@@ -37,3 +37,4 @@ G:\C#_Projects\PFA_Lucky\PFA_Lucky\bin\Debug\dll\x86\OpenCvSharpExtern.dll
 G:\C#_Projects\PFA_Lucky\PFA_Lucky\bin\Debug\dll\x86\opencv_videoio_ffmpeg420.dll
 G:\C#_Projects\PFA_Lucky\PFA_Lucky\bin\Debug\dll\x64\OpenCvSharpExtern.dll
 G:\C#_Projects\PFA_Lucky\PFA_Lucky\bin\Debug\dll\x64\opencv_videoio_ffmpeg420_64.dll
+G:\C#_Projects\PFA_Lucky\PFA_Lucky\obj\Debug\PFA_Lucky.Form2.resources

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Windows.Forms;
@@ -12,9 +13,11 @@ namespace PFA_Lucky
 {
     public class UtilsDB
     {
+        static string conn_ = "server=119.27.176.211;port=10005;user=customer;password=9876541233;database=together;";
+
         // static string connStr = "server=127.0.0.1;port=3306;user=customer;password=9876541233;database=together;";
-        static string connStr = "server=2409:8a34:a33:f9e0:fd42:ca61:c594:200b;port=3306;user=customer;password=9876541233;database=together;";
-            
+        static string connStr = "server=2409:8a34:a33:f9e0:8430:7d75:ca95:ad12;port=3306;user=customer;password=9876541233;database=together;";
+
         public static string addr_Mac = "";
 
         public static bool linksta = true;
@@ -23,6 +26,7 @@ namespace PFA_Lucky
         {
             try
             {
+                connStr= "server="+addrDB("SELECT address_ipv6 FROM addr")+";port=3306;user=customer;password=9876541233;database=together;";
                 NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
                 foreach (NetworkInterface ni in interfaces)
                 {
@@ -36,6 +40,37 @@ namespace PFA_Lucky
                 addr_Mac = "00-00-00-00-00-00";
                 Debug.WriteLine(ex.Message);
             }
+        }
+
+        public static string addrDB(string sql)
+        {
+            string ret = null;
+            MySqlConnection conn = new MySqlConnection(conn_);
+            try
+            {
+                conn.Open();
+                MySqlCommand cmd = new MySqlCommand(sql, conn); //生成命令构造器对象。
+                MySqlDataReader rdr = cmd.ExecuteReader();
+                try
+                {
+                    if (rdr.Read())
+                        ret = rdr[0].ToString();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString(), @"错误信息_addr");
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show(@"连接失败", @"错误信息_addr");
+            }
+            finally
+            {
+                conn.Close();
+            }
+
+            return ret;
         }
 
         //查询字符串   数据库
@@ -118,9 +153,9 @@ namespace PFA_Lucky
             return ret;
         }
 
-        public static byte[] getbolbDB(string sql, params MySqlParameter[] mySqlParameter)
+        public static List<byte[]> getbolbDB(string sql, List<int> geti)
         {
-            byte[] ret = null; 
+            List<byte[]> ret = new List<byte[]>();
             if (sql == "")
                 return ret;
             MySqlConnection conn = new MySqlConnection(connStr);
@@ -129,17 +164,60 @@ namespace PFA_Lucky
                 conn.Open();
                 Debug.WriteLine("已经建立连接");
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
-                foreach (var par in mySqlParameter)
-                {
-                    cmd.Parameters.Add(par);
-                }
-
                 var rdr = cmd.ExecuteReader();
-                if (rdr.Read())
+
+                int temp = 0;
+                while (rdr.Read())
                 {
-                    long len = rdr.GetBytes(0, 0, null, 0, 0);//1是picture   
-                    ret = new byte[len];  
-                    rdr.GetBytes(0, 0, ret, 0, (int)len);
+                    if (geti.Contains(temp))
+                    {
+                        long len = rdr.GetBytes(0, 0, null, 0, 0);
+                        ret.Add(new byte[len]);
+                        rdr.GetBytes(0, 0, ret.Last(), 0, (int) len);
+                    }
+
+                    temp++;
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show(@"连接失败", @"错误信息");
+                linksta = false;
+            }
+            finally
+            {
+                conn.Close();
+            }
+
+            return ret;
+        }
+
+        public static List<byte[]> getpicsDB(string sql, List<int> geti, out List<string> dates)
+        {
+            List<byte[]> ret = new List<byte[]>();
+            dates = new List<string>();
+            if (sql == "")
+                return ret;
+            MySqlConnection conn = new MySqlConnection(connStr);
+            try
+            {
+                conn.Open();
+                Debug.WriteLine("已经建立连接");
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
+                var rdr = cmd.ExecuteReader();
+
+                int temp = 0;
+                while (rdr.Read())
+                {
+                    if (geti.Contains(temp))
+                    {
+                        long len = rdr.GetBytes(0, 0, null, 0, 0);
+                        ret.Add(new byte[len]);
+                        dates.Add(rdr.GetString(1));
+                        rdr.GetBytes(0, 0, ret.Last(), 0, (int) len);
+                    }
+
+                    temp++;
                 }
             }
             catch (Exception)
@@ -163,15 +241,17 @@ namespace PFA_Lucky
                            :tryagain
                            del %1
                            if exist %1 goto tryagain
+                           ren %2 PFA_Lucky.exe
                            del %0";
             File.WriteAllText("killme.bat", bat); //写bat文件
             ProcessStartInfo psi = new ProcessStartInfo();
             psi.FileName = "killme.bat";
-            psi.Arguments = "\"" + Environment.GetCommandLineArgs()[0] + "\"";
+            psi.Arguments = "\"" + Environment.GetCommandLineArgs()[0] + "\" \"" + Environment.GetCommandLineArgs()[0] +
+                            0 + "\" \"" + Environment.GetCommandLineArgs()[0];
             psi.WindowStyle = ProcessWindowStyle.Hidden;
+            willclose();
             Process.Start(psi);
             Application.Exit();
-            willclose();
         }
     }
 }

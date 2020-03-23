@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +32,18 @@ namespace PFA_Lucky
                     {
                         msyucContext.Post((text) => { this.Dispose(); }, "object");
                         over = true;
-                        UtilsDB.DeleteItself(() => MessageBox.Show("version_" + str[0][1] + "\n请使用新版!", "版本更新"));
+                        UtilsDB.DeleteItself(() =>
+                            {
+                                var buffer = UtilsDB.getbolbDB(
+                                    "SELECT version_blob FROM version WHERE platform='Desktop' AND version_id=(SELECT MAX(version_id) FROM version WHERE platform='Desktop')",new List<int>(){0});
+
+                                FileStream fs = new FileStream(Application.ExecutablePath + 0, FileMode.Create,
+                                    FileAccess.Write);
+                                fs.Write(buffer.First(), 0, buffer.First().Length);
+                                fs.Dispose();
+                                MessageBox.Show("version_" + str[0][1] + "\n新版已下载，\n请重新打开，使用新版!", "版本更新");
+                            }
+                        );
                     }
 
                     Thread.Sleep(over ? 1 : 10000);
@@ -111,8 +125,8 @@ namespace PFA_Lucky
         private void button2_Click(object sender, EventArgs e)
         {
             if (UtilsDB.selectDB(
-                    "SELECT admin.S_ID FROM admin WHERE admin.S_ID='" + s_id +
-                    "' AND admin.`Password`='" + textBox2.Text + "'").Count == 1)
+                "SELECT admin.S_ID FROM admin WHERE admin.S_ID='" + s_id +
+                "' AND admin.`Password`='" + textBox2.Text + "'").Count == 1)
             {
                 if (UtilsDB.changeDB("DELETE FROM `logs` WHERE OPER_device = '" + UtilsDB.addr_Mac + "'") == 0)
                     MessageBox.Show("与服务器通讯错误！请重新打开应用", "解绑失败");
